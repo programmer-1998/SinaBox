@@ -1,7 +1,7 @@
 # 📦 SinaBox
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/programmer-1998/SinaBox/main/assets/banner.png" alt="SinaBox Banner" width="700" onerror="this.style.display='none'"/>
+  <img src="assets/banner.png" alt="SinaBox Banner" width="100%"/>
 </p>
 
 <p align="center">
@@ -11,7 +11,7 @@
 <p align="center">
   <a href="#-the-problem-why-sinabox"><img src="https://img.shields.io/badge/Privacy-Correlation%20Proof-brightgreen.svg" alt="Privacy"/></a>
   <a href="#-features"><img src="https://img.shields.io/badge/Security-Zero--SUID%20Rootless-blue.svg" alt="Security"/></a>
-  <a href="#-quick-start"><img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-orange.svg" alt="Platforms"/></a>
+  <a href="#-cross-platform-packages"><img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-orange.svg" alt="Platforms"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-purple.svg" alt="License"/></a>
 </p>
 
@@ -108,50 +108,50 @@ SinaBox doesn't just live in the terminal. It automatically patches all system a
 
 ## 🚀 Installation & Quick Start
 
-### Linux Installation
+### 🐧 Linux
 ```bash
 git clone https://github.com/programmer-1998/SinaBox.git
-cd SinaBox
-python3 install_desktop.py
-python3 desktop_patcher.py
+cd SinaBox/linux
+chmod +x install.sh && ./install.sh
+```
+*Or directly run `python3 install_desktop.py && python3 desktop_patcher.py`.*
+
+### 🪟 Windows
+```powershell
+git clone https://github.com/programmer-1998/SinaBox.git
+cd SinaBox\windows
+.\install.bat
 ```
 
-*Prerequisite: `bubblewrap` (installed by default on Fedora/Arch; run `sudo apt install bubblewrap` on Ubuntu/Debian/Zorin).*
-
-### CLI Usage & Examples
-
+### 🍏 macOS
 ```bash
-# 1. Run any application in SinaBox
-sinabox telegram-desktop
-
-# 2. Run Chrome 100% in RAM with zero disk footprints
-sinabox run --disposable google-chrome-stable
-
-# 3. Mute microphone and hide camera in Discord
-sinabox run --no-mic --no-cam discord
-
-# 4. Air-gapped offline analysis
-sinabox run --no-net ./suspicious_tool
-
-# 5. Reset hardware fingerprint
-sinabox hardware reset
-
-# 6. Check active VPN Geo sync status
-sinabox sync-vpn
-
-# 7. Use the convenient flag wrapper
-telegram-desktop --sinabox --custom01
+git clone https://github.com/programmer-1998/SinaBox.git
+cd SinaBox/macos
+chmod +x install.sh && ./install.sh
 ```
 
 ---
 
-## 🖥️ Cross-Platform Support
+## 🖥️ Cross-Platform Matrix
 
-| Platform | Sandboxing Core | Context Menu | Privilege Level | Status |
+| Platform | Sandboxing Core | Context Menu | Privilege Level | Installer |
 | :--- | :--- | :--- | :--- | :--- |
-| **Linux** | Bubblewrap (`bwrap`) + User Namespaces | Nautilus / Dolphin / Taskbar Actions | 100% Rootless | **Production Ready** |
-| **Windows** | AppContainer + Process Token Isolation | HKCU Shell Verbs (`.reg`) | Zero Admin | **Supported (`windows/`)** |
-| **macOS** | Apple Seatbelt (`sandbox-exec`) | Finder Quick Actions | User-Level | **Supported (`macos/`)** |
+| **Linux** | Bubblewrap (`bwrap`) + User Namespaces | Nautilus / Dolphin / Taskbar Actions | 100% Rootless | [`linux/install.sh`](linux/install.sh) |
+| **Windows** | AppContainer + Process Token Isolation | HKCU Shell Verbs (`.reg`) | Zero Admin | [`windows/install.bat`](windows/install.bat) |
+| **macOS** | Apple Seatbelt (`sandbox-exec`) | Finder Quick Actions | User-Level | [`macos/install.sh`](macos/install.sh) |
+
+---
+
+## 👤 Author & Contact
+
+**Sina Khanzadeh**
+
+- 🌐 **Website**: [sina-khanzadeh.ir](https://sina-khanzadeh.ir)
+- 🐙 **GitHub**: [@programmer-1998](https://github.com/programmer-1998)
+- ✈️ **Telegram**: [@programmer_1998](https://t.me/programmer_1998)
+- 💬 **Discord**: `programmer_1998`
+- 📸 **Instagram**: [@programmer_1998](https://instagram.com/programmer_1998)
+- 📧 **Email**: [khanzadeh.1377@gmail.com](mailto:khanzadeh.1377@gmail.com)
 
 ---
 
