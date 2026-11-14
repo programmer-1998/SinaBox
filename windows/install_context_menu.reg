@@ -1,0 +1,20 @@
+Windows Registry Editor Version 5.00
+
+; ====================================================================
+; SinaBox Windows Context Menu Integration (No Admin / HKCU)
+; Developed by Sina Khanzadeh
+; ====================================================================
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\OpenWithSinaBox]
+@="Open with SinaBox"
+"Icon"="imageres.dll,-5308"
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\OpenWithSinaBox\command]
+@="powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.sinabox\\sinabox.ps1\" run \"%1\""
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\OpenWithSinaBox]
+@="Open with SinaBox"
+"Icon"="imageres.dll,-5308"
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\OpenWithSinaBox\command]
+@="powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.sinabox\\sinabox.ps1\" run \"%1\""
