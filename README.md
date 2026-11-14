@@ -149,7 +149,7 @@ chmod +x install.sh && ./install.sh
 - 🌐 **Website**: [sina-khanzadeh.ir](https://sina-khanzadeh.ir)
 - 🐙 **GitHub**: [@programmer-1998](https://github.com/programmer-1998)
 - ✈️ **Telegram**: [@programmer_1998](https://t.me/programmer_1998)
-- 💬 **Discord**: `programmer_1998`
+- 💬 **Discord**: [@programmer_1998](https://discord.com/programmer_1998)
 - 📸 **Instagram**: [@programmer_1998](https://instagram.com/programmer_1998)
 - 📧 **Email**: [khanzadeh.1377@gmail.com](mailto:khanzadeh.1377@gmail.com)
 
