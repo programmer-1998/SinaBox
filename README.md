@@ -11,8 +11,9 @@
 <p align="center">
   <a href="#-the-problem-why-sinabox"><img src="https://img.shields.io/badge/Privacy-Correlation%20Proof-brightgreen.svg" alt="Privacy"/></a>
   <a href="#-features"><img src="https://img.shields.io/badge/Security-Zero--SUID%20Rootless-blue.svg" alt="Security"/></a>
-  <a href="#-cross-platform-packages"><img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-orange.svg" alt="Platforms"/></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-purple.svg" alt="License"/></a>
+  <a href="#-installation-guide"><img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-orange.svg" alt="Platforms"/></a>
+  <a href="https://github.com/programmer-1998/SinaBox/releases"><img src="https://img.shields.io/github/v/release/programmer-1998/SinaBox?color=purple&label=Release" alt="Release"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"/></a>
 </p>
 
 ---
@@ -106,28 +107,94 @@ SinaBox doesn't just live in the terminal. It automatically patches all system a
 
 ---
 
-## 🚀 Installation & Quick Start
+## 📥 Installation Guide
 
-### 🐧 Linux
+You can install SinaBox either via **Pre-built Release Installers** (fastest) or by **Building from Source**.
+
+### Option A: Pre-built Release Packages (Recommended)
+
+Download the official bundle for your operating system from [Releases](https://github.com/programmer-1998/SinaBox/releases):
+
+- **🐧 Linux (`SinaBox-Linux-Installer.tar.gz`)**:
+  ```bash
+  tar -xzvf SinaBox-Linux-Installer.tar.gz
+  cd linux && ./install.sh
+  ```
+- **🪟 Windows (`SinaBox-Windows-Installer.zip`)**:
+  1. Extract `SinaBox-Windows-Installer.zip`.
+  2. Right-click `install.bat` and run it.
+- **🍏 macOS (`SinaBox-macOS-Installer.tar.gz`)**:
+  ```bash
+  tar -xzvf SinaBox-macOS-Installer.tar.gz
+  cd macos && ./install.sh
+  ```
+
+---
+
+### Option B: How to Install by Source Files
+
+If you prefer cloning the repository and installing directly from the source code:
+
+#### 1. 🐧 Linux Installation from Source
 ```bash
+# Clone the repository
 git clone https://github.com/programmer-1998/SinaBox.git
-cd SinaBox/linux
-chmod +x install.sh && ./install.sh
-```
-*Or directly run `python3 install_desktop.py && python3 desktop_patcher.py`.*
+cd SinaBox
 
-### 🪟 Windows
+# Ensure bubblewrap dependency is installed
+sudo apt install bubblewrap    # Ubuntu, Debian, Zorin OS, Mint
+# or: sudo pacman -S bubblewrap # Arch Linux
+# or: sudo dnf install bubblewrap # Fedora
+
+# Run the installer
+chmod +x linux/install.sh
+./linux/install.sh
+```
+
+#### 2. 🪟 Windows Installation from Source
 ```powershell
+# In PowerShell:
 git clone https://github.com/programmer-1998/SinaBox.git
 cd SinaBox\windows
+
+# Run the installer batch script
 .\install.bat
 ```
 
-### 🍏 macOS
+#### 3. 🍏 macOS Installation from Source
 ```bash
 git clone https://github.com/programmer-1998/SinaBox.git
 cd SinaBox/macos
-chmod +x install.sh && ./install.sh
+
+chmod +x install.sh
+./install.sh
+```
+
+---
+
+## 💻 CLI Usage & Examples
+
+```bash
+# 1. Run any application in SinaBox
+sinabox telegram-desktop
+
+# 2. Run Chrome 100% in RAM with zero disk footprints
+sinabox run --disposable google-chrome-stable
+
+# 3. Mute microphone and hide camera in Discord
+sinabox run --no-mic --no-cam discord
+
+# 4. Air-gapped offline analysis
+sinabox run --no-net ./suspicious_tool
+
+# 5. Reset hardware fingerprint
+sinabox hardware reset
+
+# 6. Check active VPN Geo sync status
+sinabox sync-vpn
+
+# 7. Use the convenient flag wrapper
+telegram-desktop --sinabox --custom01
 ```
 
 ---

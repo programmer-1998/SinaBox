@@ -1,0 +1,71 @@
+name: Build & Release SinaBox Cross-Platform Installers
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Package Installers & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Build Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip tar
+
+      - name: Package Linux Installer Bundle
+        run: |
+          mkdir -p build/linux
+          cp -r linux sinabox.py install_desktop.py desktop_patcher.py README.md LICENSE build/linux/ 2>/dev/null || cp -r linux sinabox.py install_desktop.py desktop_patcher.py README.md build/linux/
+          tar -czvf SinaBox-Linux-Installer.tar.gz -C build/linux .
+
+      - name: Package Windows Installer Bundle
+        run: |
+          mkdir -p build/windows
+          cp -r windows/ README.md LICENSE build/windows/ 2>/dev/null || cp -r windows/ README.md build/windows/
+          cd build/windows && zip -r ../../SinaBox-Windows-Installer.zip . && cd ../..
+
+      - name: Package macOS Installer Bundle
+        run: |
+          mkdir -p build/macos
+          cp -r macos/ README.md LICENSE build/macos/ 2>/dev/null || cp -r macos/ README.md build/macos/
+          tar -czvf SinaBox-macOS-Installer.tar.gz -C build/macos .
+
+      - name: Generate Release Tag If Dispatch
+        id: tag_gen
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "RELEASE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+          else
+            echo "RELEASE_TAG=v1.0.0" >> $GITHUB_ENV
+          fi
+
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: SinaBox ${{ env.RELEASE_TAG }} - Cross-Platform Release
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            SinaBox-Linux-Installer.tar.gz
+            SinaBox-Windows-Installer.zip
+            SinaBox-macOS-Installer.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
