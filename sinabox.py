@@ -197,16 +197,30 @@ class SandboxEngine:
         hw = HardwareManager.get_active()
 
         app_name = Path(app_cmd[0]).name
-        box_name = options.get("box_name") or options.get("profile") or app_name
+        space_name = options.get("space")
+        if space_name:
+            box_name = f"space_{space_name}_{app_name}"
+            # Ensure space directory is tracked in SPACES_DIR
+            spaces_dir = SINABOX_DIR / "spaces" / space_name
+            spaces_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            box_name = options.get("box_name") or options.get("profile") or app_name
 
         # Storage directory
         is_disposable = options.get("disposable", False) or options.get("no_storage", False)
+        if space_name and is_disposable:
+            UI.error("A Space cannot be run with --disposable or --no-storage! Spaces require persistent isolated storage.")
+            sys.exit(1)
+
         box_dir = BOXES_DIR / box_name
         box_home = box_dir / "home"
 
         if not is_disposable:
             box_home.mkdir(parents=True, exist_ok=True)
-            UI.info(f"Using persistent box storage: {box_home}")
+            if space_name:
+                UI.info(f"Using isolated Space '{space_name}': {box_home}")
+            else:
+                UI.info(f"Using persistent box storage: {box_home}")
         else:
             UI.warn("Running in DISPOSABLE mode (100% RAM tmpfs, zero trace upon exit)")
 
@@ -443,24 +457,47 @@ def main():
                 print(f"  • {p}")
         elif sub == "create":
             if len(sys.argv) < 4:
-                UI.error("Profile name required!")
+                UI.error("Profile name required! Usage: sinabox profile create <name> [flags...]")
                 sys.exit(1)
             pname = sys.argv[3]
-            opts = {
-                "no_mic": "--no-mic" in sys.argv,
-                "no_cam": "--no-cam" in sys.argv,
-                "no_gpu": "--no-gpu" in sys.argv,
-                "no_net": "--no-net" in sys.argv,
-                "no_loc": "--no-loc" in sys.argv,
-                "no_storage": "--no-storage" in sys.argv,
-                "disposable": "--disposable" in sys.argv,
+            if pname.startswith("-"):
+                UI.error(f"Invalid profile name '{pname}'. Profile name cannot start with '-'")
+                sys.exit(1)
+
+            valid_flags = {
+                "--no-mic": "no_mic",
+                "--no-cam": "no_cam",
+                "--no-gpu": "no_gpu",
+                "--no-net": "no_net",
+                "--no-loc": "no_loc",
+                "--no-storage": "no_storage",
+                "--disposable": "disposable",
             }
+
+            opts = {k: False for k in valid_flags.values()}
+            unknown_flags = []
+
+            for arg in sys.argv[4:]:
+                if arg in valid_flags:
+                    opts[valid_flags[arg]] = True
+                else:
+                    unknown_flags.append(arg)
+
+            if unknown_flags:
+                UI.error(f"Unrecognized flag(s): {', '.join(unknown_flags)}")
+                UI.info(f"Available flags: {', '.join(valid_flags.keys())}")
+                sys.exit(1)
+
             ProfileManager.create(pname, opts)
+            # Auto-sync desktop menus
+            os.system("python3 /home/sina/.gemini/antigravity/scratch/sinabox/desktop_patcher.py >/dev/null 2>&1 &")
         elif sub == "delete":
             if len(sys.argv) < 4:
                 UI.error("Profile name required!")
                 sys.exit(1)
             ProfileManager.delete(sys.argv[3])
+            # Auto-sync desktop menus
+            os.system("python3 /home/sina/.gemini/antigravity/scratch/sinabox/desktop_patcher.py >/dev/null 2>&1 &")
         sys.exit(0)
 
     # Execution (run or direct binary)
@@ -478,34 +515,53 @@ def main():
         "no_storage": False,
         "disposable": False,
         "profile": None,
+        "space": None,
+    }
+
+    valid_exec_flags = {
+        "--no-mic": "no_mic",
+        "--no-cam": "no_cam",
+        "--no-gpu": "no_gpu",
+        "--no-net": "no_net",
+        "--no-loc": "no_loc",
+        "--no-storage": "no_storage",
+        "--disposable": "disposable",
     }
 
     target_cmd = []
     i = 0
     while i < len(raw_args):
         arg = raw_args[i]
-        if arg == "--no-mic":
-            options["no_mic"] = True
-        elif arg == "--no-cam":
-            options["no_cam"] = True
-        elif arg == "--no-gpu":
-            options["no_gpu"] = True
-        elif arg == "--no-net":
-            options["no_net"] = True
-        elif arg == "--no-loc":
-            options["no_loc"] = True
-        elif arg == "--no-storage":
-            options["no_storage"] = True
-        elif arg == "--disposable":
-            options["disposable"] = True
+        if arg in valid_exec_flags:
+            options[valid_exec_flags[arg]] = True
         elif arg in ["-p", "--profile"]:
             i += 1
             if i < len(raw_args):
                 options["profile"] = raw_args[i]
+            else:
+                UI.error("Option --profile requires an argument!")
+                sys.exit(1)
         elif arg.startswith("--profile="):
             options["profile"] = arg.split("=", 1)[1]
+        elif arg in ["-s", "--space"]:
+            i += 1
+            if i < len(raw_args):
+                options["space"] = raw_args[i]
+            else:
+                UI.error("Option --space requires an argument! e.g. --space account2")
+                sys.exit(1)
+        elif arg.startswith("--space="):
+            options["space"] = arg.split("=", 1)[1]
         elif arg.startswith("--") and ProfileManager.get(arg[2:]):
             options["profile"] = arg[2:]
+        elif arg.startswith("-"):
+            # Any unrecognized flag starting with - or --
+            UI.error(f"Unrecognized flag '{arg}'!")
+            UI.info(f"Available flags: {', '.join(valid_exec_flags.keys())}, --space <name>, --profile <name>")
+            all_profiles = ProfileManager.list()
+            if all_profiles:
+                UI.info(f"Available custom profile flags: {', '.join(['--' + p for p in all_profiles])}")
+            sys.exit(1)
         else:
             target_cmd = raw_args[i:]
             break
@@ -519,6 +575,14 @@ def main():
             for k, v in pdata.items():
                 if v:
                     options[k] = v
+        else:
+            UI.error(f"Profile '{options['profile']}' does not exist!")
+            all_p = ProfileManager.list()
+            if all_p:
+                UI.info(f"Existing profiles: {', '.join(all_p)}")
+            else:
+                UI.info("No custom profiles exist yet. Create one with: sinabox profile create <name> [flags...]")
+            sys.exit(1)
 
     if not target_cmd:
         UI.error("No target command provided to run!")
