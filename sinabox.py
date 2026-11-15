@@ -189,6 +189,15 @@ class HardwareManager:
 class SandboxEngine:
     @staticmethod
     def run(app_cmd: List[str], options: Dict[str, Any]):
+        # Check if the target is flatpak
+        if "flatpak" in app_cmd[0] or (len(app_cmd) > 1 and "flatpak" in app_cmd[1]):
+            # Delegate to specialized flatpak wrapper
+            flatpak_args = [x for x in app_cmd if x != "flatpak" and x != "run" and not x.startswith("/")]
+            app_id = flatpak_args[0] if flatpak_args else "org.telegram.desktop"
+            from flatpak_wrapper import run_flatpak_app
+            run_flatpak_app(app_id, flatpak_args[1:], options)
+            return
+
         if not shutil.which("bwrap"):
             UI.error("bubblewrap (bwrap) is not installed! Run: sudo apt install bubblewrap")
             sys.exit(1)
@@ -339,7 +348,16 @@ class SandboxEngine:
         else:
             bwrap_cmd.append("--share-net")
 
-        # 5. Location
+        # 5. Location & D-Bus Bus
+        dbus_session = Path(f"/run/user/{os.getuid()}/bus")
+        if dbus_session.exists():
+            bwrap_cmd.extend(["--bind", str(dbus_session), str(dbus_session)])
+            bwrap_cmd.extend(["--setenv", "DBUS_SESSION_BUS_ADDRESS", f"unix:path={dbus_session}"])
+
+        # Bind /var/lib/flatpak if it exists so Flatpak runtimes can be accessed
+        if Path("/var/lib/flatpak").exists():
+            bwrap_cmd.extend(["--ro-bind", "/var/lib/flatpak", "/var/lib/flatpak"])
+
         if options.get("no_loc", False):
             UI.warn("Geolocation Blocked: D-Bus GeoClue blocked.")
 
