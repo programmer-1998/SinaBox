@@ -121,21 +121,16 @@ def patch_desktop_file(src_path: Path, profiles: list):
     # Parse existing Actions
     actions_match = re.search(r"^Actions=(.*)$", content, re.MULTILINE)
     existing_actions = actions_match.group(1).strip() if actions_match else ""
-    
     actions_list = [a.strip() for a in existing_actions.split(";") if a.strip() and not a.startswith("SinaBox_") and a not in ["OpenWithSinaBox", "OpenWithCustomSinaBox"]]
-    
-    # 1. Default Action
-    actions_list.append("SinaBox_Default")
-    # 2. Space Action (Multi-Instance)
-    actions_list.append("SinaBox_Space")
-    
-    # 3. Custom Profiles Actions
+
+    sinabox_actions = ["SinaBox_Default", "SinaBox_Space"]
     for p in profiles:
         clean_action_id = "SinaBox_Profile_" + re.sub(r"[^a-zA-Z0-9_]", "_", p)
-        actions_list.append(clean_action_id)
+        sinabox_actions.append(clean_action_id)
+    sinabox_actions.append("SinaBox_Create_Profile")
 
-    # 4. Create New Profile Action
-    actions_list.append("SinaBox_Create_Profile")
+    # Put SinaBox actions first so they are immediately visible in the context menu
+    actions_list = sinabox_actions + actions_list
 
     new_actions_line = f"Actions={';'.join(actions_list)};"
 

@@ -190,12 +190,17 @@ class SandboxEngine:
     @staticmethod
     def run(app_cmd: List[str], options: Dict[str, Any]):
         # Check if the target is flatpak
-        if "flatpak" in app_cmd[0] or (len(app_cmd) > 1 and "flatpak" in app_cmd[1]):
+        if any("flatpak" in str(x) for x in app_cmd[:3]):
             # Delegate to specialized flatpak wrapper
-            flatpak_args = [x for x in app_cmd if x != "flatpak" and x != "run" and not x.startswith("/")]
-            app_id = flatpak_args[0] if flatpak_args else "org.telegram.desktop"
+            app_id = "org.telegram.desktop"
+            flatpak_extra = []
+            for arg in app_cmd:
+                if arg.startswith("org.") or arg.startswith("com.") or arg.startswith("io.") or arg.startswith("net."):
+                    app_id = arg
+                elif arg not in ["flatpak", "run", "--file-forwarding", "--"] and not arg.endswith("/flatpak"):
+                    flatpak_extra.append(arg)
             from flatpak_wrapper import run_flatpak_app
-            run_flatpak_app(app_id, flatpak_args[1:], options)
+            run_flatpak_app(app_id, flatpak_extra, options)
             return
 
         if not shutil.which("bwrap"):
@@ -361,9 +366,15 @@ class SandboxEngine:
         if options.get("no_loc", False):
             UI.warn("Geolocation Blocked: D-Bus GeoClue blocked.")
 
+        # Detect Electron / Chromium apps to avoid nested suid-sandbox conflict inside bubblewrap
+        is_electron = any(k in app_name.lower() or any(k in str(x).lower() for x in app_cmd) for k in ["code", "antigravity", "electron", "chrome", "slack", "discord"])
+        final_app_cmd = list(app_cmd)
+        if is_electron and "--no-sandbox" not in final_app_cmd:
+            final_app_cmd.append("--no-sandbox")
+
         # Final Target Command
         bwrap_cmd.append("--")
-        bwrap_cmd.extend(app_cmd)
+        bwrap_cmd.extend(final_app_cmd)
 
         UI.success(f"Launching {app_name} | City: {geo['city']} ({geo['country']}) | TZ: {geo['timezone']} | Machine: {hw['hostname']}")
 

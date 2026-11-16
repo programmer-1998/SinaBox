@@ -25,15 +25,21 @@ def run_flatpak_app(app_id: str, app_args: list, options: dict):
     cmd = ["flatpak", "run"]
 
     # Handle Space
+    extra_app_args = list(app_args)
     if space_name:
         space_dir = Path.home() / ".local" / "share" / "sinabox" / "spaces" / space_name / app_id
         space_dir.mkdir(parents=True, exist_ok=True)
-        # Flatpak custom app data dir via app-path or env
         cmd.extend([
-            f"--app-path={space_dir}",
             f"--filesystem={space_dir}"
         ])
-        UI.info(f"Using isolated Flatpak Space '{space_name}'")
+        if "telegram" in app_id.lower():
+            # Telegram uses -workdir for completely isolated session/account
+            tg_data = space_dir / "tdata"
+            tg_data.mkdir(parents=True, exist_ok=True)
+            extra_app_args.extend(["-workdir", str(space_dir)])
+        else:
+            cmd.append(f"--env=XDG_DATA_HOME={space_dir}")
+        UI.info(f"Using isolated Flatpak Space '{space_name}': {space_dir}")
 
     # Timezone & Locale env
     cmd.extend([
@@ -55,7 +61,7 @@ def run_flatpak_app(app_id: str, app_args: list, options: dict):
         ])
 
     cmd.append(app_id)
-    cmd.extend(app_args)
+    cmd.extend(extra_app_args)
 
     UI.success(f"Launching Flatpak {app_id} | City: {geo['city']} ({geo['country']}) | TZ: {tz}")
     res = subprocess.run(cmd)
