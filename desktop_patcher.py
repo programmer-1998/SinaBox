@@ -135,7 +135,7 @@ def patch_desktop_file(src_path: Path, profiles: list):
     new_actions_line = f"Actions={';'.join(actions_list)};"
 
     # Strip existing [Desktop Action SinaBox...] blocks
-    content = re.sub(r"\n\[Desktop Action (?:SinaBox_|OpenWithSinaBox).*?\][\s\S]*?(?=\n\[|\Z)", "", content)
+    content = re.sub(r"\n\[Desktop Action (?:SinaBox_|OpenWithSinaBox|OpenWithCustomSinaBox).*?\][\s\S]*?(?=\n\[|\Z)", "", content)
 
     if actions_match:
         content = re.sub(r"^Actions=.*$", new_actions_line, content, flags=re.MULTILINE)
